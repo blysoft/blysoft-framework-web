@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+         http://www.springframework.org/schema/tx
+         http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+         http://www.springframework.org/schema/context
+         http://www.springframework.org/schema/context/spring-context-3.0.xsd
+         http://www.springframework.org/schema/aop 
+         http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+   
+	<context:component-scan base-package="com.blysoft.*" />
+	<context:annotation-config />
+    <aop:aspectj-autoproxy/>
+	<!-- 导入属性配置文件 -->
+	<context:property-placeholder location="classpath:config/config.properties" />
+    
+    <!-- <bean id="propertyConfigurer"  
+        class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">  
+        <property name="location" value="/WEB-INF/config.properties" />  
+    </bean>   -->
+    
+    <!--destroy-method="close"的作用是当数据库连接不使用的时候,就把该连接重新放到数据池中,方便下次使用调用  -->
+    <bean id="myDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driverClassName}" />
+		<property name="url" value="${jdbc.jdbcUrl}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="initialSize" value="${jdbc.initialSize}"/>
+		<property name="maxActive" value="${jdbc.maxActive}" />
+		<property name="filters" value="${jdbc.filters}" />
+		<property name="poolPreparedStatements" value="${jdbc.poolPreparedStatements}"></property>
+		<property name="maxOpenPreparedStatements" value="${jdbc.maxOpenPreparedStatements}" />
+		<property name="validationQuery" value="${jdbc.validationQuery}"/>
+		<property name="testOnBorrow" value="${jdbc.testOnBorrow}" />
+		<property name="testOnReturn" value="${jdbc.testOnReturn}" />
+		<property name="testWhileIdle" value="${jdbc.testWhileIdle}" />
+		<property name="timeBetweenEvictionRunsMillis" value="${jdbc.timeBetweenEvictionRunsMillis}" />
+	</bean>
+	
+    <!-- 事务配置 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="myDataSource" />
+	</bean>
+
+	<!-- 事务控制 -->
+	<tx:annotation-driven transaction-manager="transactionManager" order="0" />
+	
+	<!-- 
+    <tx:advice id="userTxAdvice" transaction-manager="transactionManager">
+	    <tx:attributes>
+	      <tx:method name="delete*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception" no-rollback-for="java.lang.RuntimeException"/>
+	      <tx:method name="insert*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.RuntimeException" />
+	      <tx:method name="update*" propagation="REQUIRED" read-only="false" rollback-for="java.lang.Exception" />
+	      <tx:method name="find*" propagation="SUPPORTS"/>
+	      <tx:method name="get*" propagation="SUPPORTS"/>
+	      <tx:method name="select*" propagation="SUPPORTS"/>
+	    </tx:attributes>
+   </tx:advice>
+   -->
+  
+  <!--把事务控制在Service层-->
+  <!-- 
+   <aop:config>    
+    <aop:pointcut id="pc" expression="execution(public * com.soft.zry.test.service.*.*(..))" /> 
+    <aop:advisor pointcut-ref="pc" advice-ref="userTxAdvice" />
+   </aop:config>
+  -->   
+ <!--jdbcTemplate -->
+   <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource">
+			<ref bean="myDataSource" />
+		</property>
+    </bean>  
+	
+</beans>
